@@ -8,7 +8,8 @@ ROOT_DIR = Path(__file__).resolve().parent.parent.parent
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=ROOT_DIR / ".env",
-        env_file_encoding="utf-8"
+        env_file_encoding="utf-8",
+        extra="allow"  
     )
 
     app_name: str = "Finance API"

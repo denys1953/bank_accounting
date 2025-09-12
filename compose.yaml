@@ -1,21 +1,28 @@
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: my-redis-broker
+    ports:
+      - "6379:6379"
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
     container_name: finance_postgres
+    env_file:
+      - .env
     environment:
-      POSTGRES_DB: mydb
-      POSTGRES_USER: myuser
-      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_HOST_AUTH_METHOD: trust
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "5434:5432"
     networks:
       - finance_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U myuser -d mydb"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -24,13 +31,10 @@ services:
   fastapi:
     build: .
     container_name: finance_fastapi
+    env_file:
+      - .env
     environment:
-      - DATABASE_URL=postgresql+asyncpg://myuser:mypassword@postgres:5432/mydb
-      - SECRET_KEY=your-secret-key-change-in-production
-      - ALGORITHM=HS256
-      - ACCESS_TOKEN_EXPIRE_MINUTES=30
-      - REFRESH_TOKEN_EXPIRE_DAYS=30
-      - DEBUG=True
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
     ports:
       - "8000:8000"
     depends_on:

@@ -8,6 +8,8 @@ from app.apis.users import models as users
 from ..users.models import User, UserRole 
 from app.apis.accounts.models import Account 
 from fastapi import HTTPException, status
+from sqlalchemy.orm import selectinload
+
 
 
 
@@ -53,7 +55,14 @@ async def create_transaction(db: AsyncSession, transaction: schemas.TransactionC
     return db_transaction
 
 async def get_transaction_by_id(db: AsyncSession, user: users.User, transaction_id: int) -> models.Transaction | None:
-    query = select(models.Transaction).where(models.Transaction.id == transaction_id)
+    query = (
+        select(models.Transaction)
+        .where(models.Transaction.id == transaction_id)
+        .options(
+            selectinload(models.Transaction.sender_account).selectinload(Account.user),
+            selectinload(models.Transaction.recipient_account).selectinload(Account.user)
+        )
+    )    
     result = await db.execute(query)
 
     transaction = result.scalar_one_or_none()

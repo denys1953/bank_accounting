@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Header
+from fastapi import APIRouter, Depends, HTTPException, Response, status, Header
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Annotated
 
@@ -7,6 +7,10 @@ from app.core.security import get_current_user
 from app.apis.permissions import allow_admin_only
 from . import schemas, service, models
 from app.apis.users import models as users
+
+from app.core.pdf_generator import create_receipt_pdf_with_reportlab as create_receipt_pdf
+
+from app.apis import transactions
 
 router = APIRouter(
     dependencies=[Depends(get_current_user)]
@@ -68,3 +72,25 @@ async def delete_transaction(
     await db.commit()
 
     return transaction_to_delete
+
+@router.get("/{transaction_id}/receipt", response_model=schemas.TransactionRead)
+async def download_receipt(
+    transaction_id: int,
+    db: AsyncSession = Depends(get_db),
+    current_user: users.User = Depends(get_current_user)
+):
+    transaction = await service.get_transaction_by_id(transaction_id=transaction_id, db=db, user=current_user)
+
+    pdf_bytes = create_receipt_pdf(transaction=transaction)
+
+    if not pdf_bytes:
+        raise HTTPException(status_code=500, detail="Error while generating receipt")
+
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f'attachment; filename="receipt_{transaction.id}.pdf"'
+        }
+    )
+    

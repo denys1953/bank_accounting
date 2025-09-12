@@ -11,6 +11,7 @@ class Transaction(Base):
     description = Column(String, nullable=True)
     sender_account_id = Column(Integer, ForeignKey("accounts.id"), nullable=False)
     recipient_account_id = Column(Integer, ForeignKey("accounts.id"), nullable=False)
-
+    sender_account = relationship("Account", foreign_keys=[sender_account_id])
+    recipient_account = relationship("Account", foreign_keys=[recipient_account_id])
 
     
