@@ -1,10 +1,12 @@
 from pydantic import BaseModel, PositiveFloat
 from datetime import datetime
+from typing import Optional
 
 
 class TransactionBase(BaseModel):
     amount: PositiveFloat
     description: str | None = None
+    category_id: Optional[int] = None
 
 
 class TransactionCreate(TransactionBase):

@@ -11,7 +11,6 @@ class Transaction(Base):
     description = Column(String, nullable=True)
     sender_account_id = Column(Integer, ForeignKey("accounts.id"), nullable=False)
     recipient_account_id = Column(Integer, ForeignKey("accounts.id"), nullable=False)
-    category = Column(Integer, ForeignKey("categories.id"), nullable=True)
-    category = relationship("Category")
+
 
     
