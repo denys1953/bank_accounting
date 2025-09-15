@@ -4,6 +4,8 @@ from typing import List, Annotated
 
 from app.db.sessions import get_db
 from app.core.security import get_current_user
+from app.apis.pagination import get_pagination_params, PaginationParams
+
 from app.apis.permissions import allow_admin_only
 from . import schemas, service, models
 from app.apis.users import models as users
@@ -45,9 +47,10 @@ async def get_transaction_by_id(
 @router.get("/", response_model=List[schemas.TransactionRead])
 async def get_all_transactions(
     db: AsyncSession = Depends(get_db),
-    current_admin: users.User = Depends(allow_admin_only)
+    current_admin: users.User = Depends(allow_admin_only),
+    pagination: PaginationParams = Depends(get_pagination_params)
 ):
-    transactions = await service.get_all_transactions(db=db)
+    transactions = await service.get_all_transactions(db=db, pagination=pagination)
     return transactions
 
 @router.delete("/{transaction_id}", response_model=schemas.TransactionRead)

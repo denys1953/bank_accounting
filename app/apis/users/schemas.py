@@ -1,5 +1,6 @@
 from app.apis.users.models import UserRole
 from pydantic import BaseModel, EmailStr
+from pydantic import ConfigDict
 
 
 class UserBase(BaseModel):
@@ -17,6 +18,5 @@ class UserRead(UserBase):
     id: int
     is_active: bool
     role: UserRole
-
-    class Config:
-        from_attributes = True  
+    
+    model_config = ConfigDict(from_attributes=True)

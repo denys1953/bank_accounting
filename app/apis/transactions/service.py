@@ -9,7 +9,7 @@ from ..users.models import User, UserRole
 from app.apis.accounts.models import Account 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import selectinload
-
+from ..pagination import PaginationParams
 
 
 
@@ -78,10 +78,11 @@ async def get_transaction_by_id(db: AsyncSession, user: users.User, transaction_
     
     return None
 
-async def get_all_transactions(db: AsyncSession) -> List[models.Transaction]:
-    query = select(models.Transaction)
+async def get_all_transactions(db: AsyncSession, pagination: PaginationParams) -> List[models.Transaction]:
+    query = select(models.Transaction).offset(pagination["skip"]).limit(pagination["limit"])
     result = await db.execute(query)
     return result.scalars().all()
 
 async def delete_transaction(db: AsyncSession, user_id, user_role) -> models.Transaction:
     pass
+

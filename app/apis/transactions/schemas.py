@@ -1,12 +1,11 @@
 from pydantic import BaseModel, PositiveFloat
+from pydantic import ConfigDict
 from datetime import datetime
-from typing import Optional
 
 
 class TransactionBase(BaseModel):
     amount: PositiveFloat
     description: str | None = None
-    category_id: Optional[int] = None
 
 
 class TransactionCreate(TransactionBase):
@@ -21,6 +20,5 @@ class TransactionRead(TransactionBase):
     sender_account_id: int
     recipient_account_id: int
     timestamp: datetime
-
-    class Config:
-        from_attributes = True 
+    
+    model_config = ConfigDict(from_attributes=True)
