@@ -10,7 +10,7 @@ from app.apis.accounts.models import Account
 from fastapi import HTTPException, status
 from sqlalchemy.orm import selectinload
 from ..pagination import PaginationParams
-
+from app.core.websocket_manager import manager as ws_manager 
 
 
 async def create_transaction(db: AsyncSession, transaction: schemas.TransactionCreate, sender_id: int) -> models.Transaction:
@@ -51,6 +51,19 @@ async def create_transaction(db: AsyncSession, transaction: schemas.TransactionC
 
     await db.commit()
     await db.refresh(db_transaction)
+
+    notification_payload = {
+        "type": "NEW_TRANSACTION",
+        "data": {
+            "transaction_id": db_transaction.id,
+            "amount": db_transaction.amount,
+            "sender_email": sender.user.email,
+            "timestamp": db_transaction.timestamp.isoformat()
+        }
+    }
+
+    await ws_manager.send_personal_message(notification_payload, user_id=recipient.id)
+
 
     return db_transaction
 

@@ -9,6 +9,8 @@ from fastapi import Depends, status, HTTPException
 from app.db.sessions import get_db
 from app.core.oauth2 import oauth2_scheme
 from app.apis.users import models as user_models
+from fastapi import Depends, HTTPException, status, WebSocket, Query
+
 
 from app.core.settings import settings
 
@@ -70,3 +72,44 @@ async def get_current_user(
     
     return user
 
+
+async def get_current_user_ws(
+    # Ми очікуємо WebSocket, а не Request
+    websocket: WebSocket,
+    # Читаємо токен з query параметра ?token=...
+    token: str | None = Query(None),
+    db: AsyncSession = Depends(get_db)
+) -> user_models.User:
+    """
+    Автентифікує користувача для WebSocket з'єднання,
+    читаючи JWT-токен з query параметра.
+    """
+    if token is None:
+        # Якщо токен не надано, закриваємо з'єднання з кодом помилки
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+        return None # Повертаємо None, хоча код вже не дійде сюди
+
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise credentials_exception
+    except JWTError:
+        # У випадку помилки токена, також закриваємо з'єднання
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+        return None
+
+    user = await db.get(user_models.User, int(user_id))
+    if user is None:
+        # Якщо користувача не знайдено, закриваємо з'єднання
+        await websocket.close(code=status.WS_1008_POLICY_VIOLATION)
+        return None
+    
+    return user

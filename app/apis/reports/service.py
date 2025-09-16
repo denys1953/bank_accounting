@@ -1,16 +1,11 @@
-from typing import Union, List
 from sqlalchemy.ext.asyncio import AsyncSession
-from passlib.context import CryptContext
 from sqlalchemy.future import select
-from app.core import security
 from datetime import date
-from . import schemas
 from app.apis.users import models as users
 from ..transactions import models as transaction_models
 from app.apis.accounts.models import Account 
 from fastapi import HTTPException, status
-from sqlalchemy.orm import selectinload
-from sqlalchemy import func, and_
+from sqlalchemy import func
 
 
 async def get_summary_report(db: AsyncSession, user: users.User, start_date: date, end_date: date) -> dict:

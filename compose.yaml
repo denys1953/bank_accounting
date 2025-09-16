@@ -4,6 +4,7 @@ services:
     container_name: my-redis-broker
     ports:
       - "6379:6379"
+
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
@@ -55,6 +56,7 @@ services:
       "
 
 volumes:
+  minio_data:
   postgres_data:
 
 networks:
