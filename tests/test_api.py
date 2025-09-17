@@ -241,7 +241,7 @@ async def test_create_transaction_current_limitations(client):
 
     # Force a validation error in the service layer to avoid async lazy-loading during serialization
     # by using a non-existent recipient account id
-    payload = {"amount": 10.0, "description": "test", "recipient_account_id": 999999}
+    payload = {"amount": 10.0, "description": "test", "recipient_account_email": "testsomething@email.com"}
     resp = client.post("/transaction/create", json=payload)
     assert resp.status_code == 400
 
