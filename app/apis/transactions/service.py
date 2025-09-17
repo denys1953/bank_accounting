@@ -14,23 +14,18 @@ from app.core.websocket_manager import manager as ws_manager
 
 
 async def create_transaction(db: AsyncSession, transaction: schemas.TransactionCreate, sender_id: int) -> models.Transaction:
-    db_transaction = models.Transaction(
-        amount=transaction.amount,
-        description=transaction.description,
-        sender_account_id=sender_id,
-        recipient_account_id=transaction.recipient_account_id
-    )
+    query = select(User).where(User.email == transaction.recipient_account_email)
+    result = await db.execute(query)
+    recipient_account = result.scalar_one_or_none()
 
-
+    if not recipient_account:
+        raise HTTPException(status_code=400, detail=f"Recipient user has no account.")
 
     sender = await db.get(Account, sender_id)
-    recipient = await db.get(Account, transaction.recipient_account_id)
+    recipient = await db.get(Account, recipient_account.id)
     
     if not sender:
         raise HTTPException(status_code=400, detail="Sender account not found.")
-
-    if not recipient:
-        raise HTTPException(status_code=400, detail=f"Recipient user has no account.")
 
     if sender.id == recipient.id:
         raise HTTPException(status_code=400, detail="Cannot send money to yourself.")
@@ -44,6 +39,12 @@ async def create_transaction(db: AsyncSession, transaction: schemas.TransactionC
     sender.balance -= transaction.amount
     recipient.balance += transaction.amount
 
+    db_transaction = models.Transaction(
+        amount=transaction.amount,
+        description=transaction.description,
+        sender_account_id=sender_id,
+        recipient_account_id=recipient_account.id
+    )
 
     db.add(db_transaction)
     db.add(sender)

@@ -18,10 +18,6 @@ async def login_for_access_token(
     db: AsyncSession = Depends(get_db),
     form_data: OAuth2PasswordRequestForm = Depends()
 ):
-    """
-    Видає JWT-токен для автентифікації.
-    Клієнт має надіслати `username` (який є email) та `password`.
-    """
     user = await users_service.authenticate_user(
         db, email=form_data.username, password=form_data.password
     )
@@ -46,9 +42,6 @@ async def refresh_access_token(
     request: schemas.RefreshTokenRequest,
     db: AsyncSession = Depends(get_db)
 ):
-    """
-    Оновлює access та refresh токени.
-    """
     token = request.refresh_token
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -58,7 +51,6 @@ async def refresh_access_token(
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         
-        # Перевіряємо, що це дійсно refresh токен
         if payload.get("type") != "refresh":
             raise credentials_exception
             
@@ -69,11 +61,10 @@ async def refresh_access_token(
     except JWTError:
         raise credentials_exception
     
-    user = await users_service.get_user(db, user_id=int(user_id)) # Припускаємо, що є така функція
+    user = await users_service.get_user(db, user_id=int(user_id)) 
     if user is None:
         raise credentials_exception
         
-    # Створюємо нову пару токенів
     new_access_token = security.create_access_token(subject=user.id)
     new_refresh_token = security.create_refresh_token(subject=user.id)
     

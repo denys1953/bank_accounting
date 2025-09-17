@@ -8,7 +8,6 @@ celery_app = Celery(
     backend=redis_url 
 )
 
-# Опціональні налаштування
 celery_app.conf.update(
     task_track_started=True,
 )

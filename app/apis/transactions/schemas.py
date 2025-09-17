@@ -9,7 +9,7 @@ class TransactionBase(BaseModel):
 
 
 class TransactionCreate(TransactionBase):
-    recipient_account_id: int
+    recipient_account_email: str
 
 
 class TransactionUpdate(TransactionBase):

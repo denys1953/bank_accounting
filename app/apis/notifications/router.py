@@ -15,7 +15,6 @@ async def websocket_notifications_endpoint(
     await manager.connect(websocket, user_id)
     print(f"User {user_id} has connected to the notifications.")
 
-
     try:
         while True:
             await websocket.receive_text()

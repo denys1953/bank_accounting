@@ -18,9 +18,7 @@ except Exception as e:
 
 
 def create_receipt_pdf_with_reportlab(transaction: Transaction) -> bytes:
-    """
-    Генерує PDF-квитанцію за допомогою reportlab і повертає її як байти.
-    """
+
     buffer = io.BytesIO()
 
     p = canvas.Canvas(buffer, pagesize=A4)
