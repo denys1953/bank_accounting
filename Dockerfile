@@ -27,10 +27,10 @@ RUN pip install --no-cache-dir --upgrade pip \
 # Copy application code
 COPY . .
 
-# Create non-root user
-RUN adduser --disabled-password --gecos '' appuser \
-    && chown -R appuser:appuser /app
-USER appuser
+# Create non-root user (optional for development)
+RUN adduser --disabled-password --gecos '' appuser
+# For development, we'll run as root to avoid permission issues
+# USER appuser
 
 # Expose port
 EXPOSE 8000
