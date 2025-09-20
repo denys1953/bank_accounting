@@ -49,6 +49,10 @@ services:
       sh -c "
         echo 'Waiting for database...' &&
         sleep 5 &&
+        echo 'Checking files...' &&
+        ls -la /app/ &&
+        echo 'Checking alembic.ini...' &&
+        cat /app/alembic.ini | head -10 &&
         echo 'Running migrations...' &&
         alembic upgrade head &&
         echo 'Starting FastAPI server...' &&

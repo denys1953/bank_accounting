@@ -23,10 +23,6 @@ def get_password_hash(password: str) -> str:
     return pwd_context.hash(password)
 
 def create_access_token(subject: str | Any, expires_delta: timedelta | None = None) -> str:
-    """
-    Створює новий JWT-токен.
-    :param subject: Дані, які будуть закодовані в токен (зазвичай id або email користувача).
-    """
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
